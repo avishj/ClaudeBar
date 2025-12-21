@@ -147,13 +147,16 @@ jobs:
             file "$RUNNER_TEMP/certificate.p12"
             echo ""
             echo "=== P12 contents check ==="
+            openssl pkcs12 -in "$RUNNER_TEMP/certificate.p12" -passin pass:"$P12_PASSWORD" -legacy -nokeys 2>&1 | head -20 || \
             openssl pkcs12 -in "$RUNNER_TEMP/certificate.p12" -passin pass:"$P12_PASSWORD" -nokeys 2>&1 | head -20
           fi
 
-          # Validate P12 file
+          # Validate P12 file (try with -legacy flag for OpenSSL 3.x)
           if ! openssl pkcs12 -in "$RUNNER_TEMP/certificate.p12" -passin pass:"$P12_PASSWORD" -noout 2>/dev/null; then
-            echo "ERROR: Failed to read P12 file. Wrong password or corrupted file."
-            exit 1
+            if ! openssl pkcs12 -in "$RUNNER_TEMP/certificate.p12" -passin pass:"$P12_PASSWORD" -legacy -noout 2>/dev/null; then
+              echo "ERROR: Failed to read P12 file. Wrong password or corrupted file."
+              exit 1
+            fi
           fi
 
           # Create keychain

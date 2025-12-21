@@ -123,59 +123,32 @@ ClaudeBar follows Clean Architecture with hexagonal/ports-and-adapters patterns:
 
 Releases are automated via GitHub Actions. Push a version tag to create a new release.
 
-### Prerequisites
+**For detailed setup instructions, see [docs/RELEASE_SETUP.md](docs/RELEASE_SETUP.md).**
 
-Add these secrets to your GitHub repository (Settings → Secrets → Actions):
+### Quick Start
 
-| Secret                         | Description                                    |
-|--------------------------------|------------------------------------------------|
-| `APPLE_CERTIFICATE_P12`        | Developer ID Application certificate (base64) |
-| `APPLE_CERTIFICATE_PASSWORD`   | Password for the .p12 file                     |
-| `APP_STORE_CONNECT_API_KEY_P8` | App Store Connect API key (base64)             |
-| `APP_STORE_CONNECT_KEY_ID`     | API Key ID                                     |
-| `APP_STORE_CONNECT_ISSUER_ID`  | Issuer ID                                      |
+1. **Configure GitHub Secrets** (see [full guide](docs/RELEASE_SETUP.md)):
 
-### Getting the Certificate Secrets
+   | Secret | Description |
+   |--------|-------------|
+   | `APPLE_CERTIFICATE_P12` | Developer ID certificate (base64) |
+   | `APPLE_CERTIFICATE_PASSWORD` | Password for .p12 |
+   | `APP_STORE_CONNECT_API_KEY_P8` | API key (base64) |
+   | `APP_STORE_CONNECT_KEY_ID` | Key ID |
+   | `APP_STORE_CONNECT_ISSUER_ID` | Issuer ID |
 
-1. Open **Keychain Access** on your Mac
-2. Find `Developer ID Application: Your Name (TEAM_ID)` in **My Certificates**
-3. Right-click → **Export** → Save as `.p12` with a password
-4. Convert to base64:
+2. **Verify your certificate**:
    ```bash
-   base64 -i certificate.p12 | pbcopy
+   ./scripts/verify-p12.sh /path/to/certificate.p12
    ```
-5. Add to GitHub as `APPLE_CERTIFICATE_P12`
-6. Add the password as `APPLE_CERTIFICATE_PASSWORD`
 
-### Getting the App Store Connect Secrets
-
-1. Go to [App Store Connect API Keys](https://appstoreconnect.apple.com/access/api)
-2. Create a new key with **Developer** role
-3. Download the `.p8` file (shown only once!)
-4. Note the **Key ID** and **Issuer ID**
-5. Convert to base64:
+3. **Create a release**:
    ```bash
-   base64 -i AuthKey_XXXXXX.p8 | pbcopy
+   git tag v1.0.0
+   git push origin v1.0.0
    ```
-6. Add to GitHub:
-   - `APP_STORE_CONNECT_API_KEY_P8` → the base64 string
-   - `APP_STORE_CONNECT_KEY_ID` → the Key ID
-   - `APP_STORE_CONNECT_ISSUER_ID` → the Issuer ID
 
-### Creating a Release
-
-```bash
-# Tag and push
-git tag v1.0.0
-git push origin v1.0.0
-```
-
-The workflow will automatically:
-- Build a universal binary (Intel + Apple Silicon)
-- Sign with Developer ID
-- Notarize with Apple
-- Create DMG and ZIP with checksums
-- Publish to GitHub Releases
+The workflow will automatically build, sign, notarize, and publish to GitHub Releases.
 
 ## License
 
