@@ -10,28 +10,32 @@ struct AIProviderProtocolTests {
 
     @Test
     func `provider has required id property`() {
-        let claude = ClaudeProvider(probe: MockUsageProbe())
+        let mockProbe = MockUsageProbe()
+        let claude = ClaudeProvider(probe: mockProbe)
 
         #expect(claude.id == "claude")
     }
 
     @Test
     func `provider has required name property`() {
-        let claude = ClaudeProvider(probe: MockUsageProbe())
+        let mockProbe = MockUsageProbe()
+        let claude = ClaudeProvider(probe: mockProbe)
 
         #expect(claude.name == "Claude")
     }
 
     @Test
     func `provider has required cliCommand property`() {
-        let claude = ClaudeProvider(probe: MockUsageProbe())
+        let mockProbe = MockUsageProbe()
+        let claude = ClaudeProvider(probe: mockProbe)
 
         #expect(claude.cliCommand == "claude")
     }
 
     @Test
     func `provider has dashboardURL property`() {
-        let claude = ClaudeProvider(probe: MockUsageProbe())
+        let mockProbe = MockUsageProbe()
+        let claude = ClaudeProvider(probe: mockProbe)
 
         #expect(claude.dashboardURL != nil)
         #expect(claude.dashboardURL?.absoluteString.contains("anthropic.com") == true)
@@ -39,7 +43,8 @@ struct AIProviderProtocolTests {
 
     @Test
     func `provider delegates isAvailable to probe`() async {
-        let mockProbe = MockUsageProbe(isAvailableResult: true)
+        let mockProbe = MockUsageProbe()
+        given(mockProbe).isAvailable().willReturn(true)
         let claude = ClaudeProvider(probe: mockProbe)
 
         let isAvailable = await claude.isAvailable()
@@ -54,7 +59,8 @@ struct AIProviderProtocolTests {
             quotas: [],
             capturedAt: Date()
         )
-        let mockProbe = MockUsageProbe(probeResult: expectedSnapshot)
+        let mockProbe = MockUsageProbe()
+        given(mockProbe).probe().willReturn(expectedSnapshot)
         let claude = ClaudeProvider(probe: mockProbe)
 
         let snapshot = try await claude.refresh()
@@ -66,17 +72,19 @@ struct AIProviderProtocolTests {
 
     @Test
     func `providers with same id are equal`() {
-        let provider1 = ClaudeProvider(probe: MockUsageProbe())
-        let provider2 = ClaudeProvider(probe: MockUsageProbe())
+        let mockProbe = MockUsageProbe()
+        let provider1 = ClaudeProvider(probe: mockProbe)
+        let provider2 = ClaudeProvider(probe: mockProbe)
 
         #expect(provider1.id == provider2.id)
     }
 
     @Test
     func `different providers have different ids`() {
-        let claude = ClaudeProvider(probe: MockUsageProbe())
-        let codex = CodexProvider(probe: MockUsageProbe())
-        let gemini = GeminiProvider(probe: MockUsageProbe())
+        let mockProbe = MockUsageProbe()
+        let claude = ClaudeProvider(probe: mockProbe)
+        let codex = CodexProvider(probe: mockProbe)
+        let gemini = GeminiProvider(probe: mockProbe)
 
         #expect(claude.id != codex.id)
         #expect(claude.id != gemini.id)
@@ -87,7 +95,8 @@ struct AIProviderProtocolTests {
 
     @Test
     func `provider tracks isSyncing state during refresh`() async throws {
-        let mockProbe = MockUsageProbe(probeResult: UsageSnapshot(
+        let mockProbe = MockUsageProbe()
+        given(mockProbe).probe().willReturn(UsageSnapshot(
             providerId: "claude",
             quotas: [],
             capturedAt: Date()
@@ -109,7 +118,8 @@ struct AIProviderProtocolTests {
             quotas: [UsageQuota(percentRemaining: 50, quotaType: .session, providerId: "claude")],
             capturedAt: Date()
         )
-        let mockProbe = MockUsageProbe(probeResult: expectedSnapshot)
+        let mockProbe = MockUsageProbe()
+        given(mockProbe).probe().willReturn(expectedSnapshot)
         let claude = ClaudeProvider(probe: mockProbe)
 
         #expect(claude.snapshot == nil)
@@ -122,7 +132,8 @@ struct AIProviderProtocolTests {
 
     @Test
     func `provider stores error on refresh failure`() async {
-        let mockProbe = MockUsageProbe(probeError: ProbeError.timeout)
+        let mockProbe = MockUsageProbe()
+        given(mockProbe).probe().willThrow(ProbeError.timeout)
         let claude = ClaudeProvider(probe: mockProbe)
 
         #expect(claude.lastError == nil)
