@@ -9,12 +9,20 @@
 
 A macOS menu bar application that monitors AI coding assistant usage quotas. Keep track of your Claude, Codex, and Gemini usage at a glance.
 
-![ClaudeBar Screenshot](docs/Screenshot-new.png)
+<p align="center">
+  <img src="docs/Screenshot-dark.png" alt="ClaudeBar Dark Mode" width="380"/>
+  &nbsp;&nbsp;&nbsp;&nbsp;
+  <img src="docs/Screenshot-light.png" alt="ClaudeBar Light Mode" width="380"/>
+</p>
+<p align="center">
+  <em>Dark Mode &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Light Mode</em>
+</p>
 
 ## Features
 
 - **Multi-Provider Support** - Monitor Claude, Codex, and Gemini quotas in one place
 - **Real-Time Quota Tracking** - View Session, Weekly, and Model-specific usage percentages
+- **Light & Dark Themes** - Automatically adapts to your system appearance
 - **Visual Status Indicators** - Color-coded progress bars (green/yellow/red) show quota health
 - **System Notifications** - Get alerted when quota status changes to warning or critical
 - **Auto-Refresh** - Automatically updates quotas at configurable intervals

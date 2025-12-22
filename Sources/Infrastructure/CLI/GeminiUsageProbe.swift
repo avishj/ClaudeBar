@@ -36,20 +36,29 @@ public struct GeminiUsageProbe: UsageProbePort {
         // Strategy: Try CLI first, fall back to API
         // This logic is now coordinated here, while implementation details are in sub-probes.
         
-        let cliProbe = GeminiCLIProbe(timeout: timeout)
+        let apiProbe = GeminiAPIProbe(
+            homeDirectory: homeDirectory,
+            timeout: timeout,
+            networkClient: networkClient
+        )
+        return try await apiProbe.probe()
         
-        do {
-            return try await cliProbe.probe()
-        } catch {
-            logger.warning("Gemini CLI failed: \(error.localizedDescription), trying API fallback...")
-            
-            let apiProbe = GeminiAPIProbe(
-                homeDirectory: homeDirectory,
-                timeout: timeout,
-                networkClient: networkClient
-            )
-            return try await apiProbe.probe()
-        }
+        // Cli not working reliably, disable for now
+        
+//        let cliProbe = GeminiCLIProbe(timeout: timeout)
+//        
+//        do {
+//            return try await cliProbe.probe()
+//        } catch {
+//            logger.warning("Gemini CLI failed: \(error.localizedDescription), trying API fallback...")
+//            
+//            let apiProbe = GeminiAPIProbe(
+//                homeDirectory: homeDirectory,
+//                timeout: timeout,
+//                networkClient: networkClient
+//            )
+//            return try await apiProbe.probe()
+//        }
     }
 
     // MARK: - Legacy Parsing Support (for Tests)
