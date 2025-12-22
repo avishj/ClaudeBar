@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-ClaudeBar is a macOS menu bar application that monitors AI coding assistant usage quotas (Claude, Codex, Gemini). It probes CLI tools to fetch quota information and displays it in a menu bar interface with system notifications for status changes.
+ClaudeBar is a macOS menu bar application that monitors AI coding assistant usage quotas (Claude, Codex, Gemini, GitHub Copilot). It probes CLI tools to fetch quota information and displays it in a menu bar interface with system notifications for status changes.
 
 ## Build & Test Commands
 
@@ -45,6 +45,7 @@ The project follows a layered architecture with protocol-based dependency inject
     - `RPCTransport` protocol - abstracts JSON-RPC communication
     - `GeminiUsageProbe` - coordinates `GeminiAPIProbe` with network client
     - `GeminiProjectRepository` - discovers Gemini projects for quota lookup
+    - `CopilotUsageProbe` - probes GitHub Copilot usage via credentials and API
   - Adapters (`Adapters/`): Pure adapters for 3rd party interaction (excluded from coverage)
     - `PTYCommandRunner` - runs CLI commands with PTY for interactive prompts
     - `ProcessRPCTransport` - JSON-RPC over Process stdin/stdout pipes

@@ -7,7 +7,7 @@
 [![Swift 6.2](https://img.shields.io/badge/Swift-6.2-orange.svg)](https://swift.org)
 [![Platform](https://img.shields.io/badge/Platform-macOS%2015-blue.svg)](https://developer.apple.com)
 
-A macOS menu bar application that monitors AI coding assistant usage quotas. Keep track of your Claude, Codex, and Gemini usage at a glance.
+A macOS menu bar application that monitors AI coding assistant usage quotas. Keep track of your Claude, Codex, Gemini, and GitHub Copilot usage at a glance.
 
 <p align="center">
   <img src="docs/Screenshot-dark.png" alt="ClaudeBar Dark Mode" width="380"/>
@@ -20,7 +20,7 @@ A macOS menu bar application that monitors AI coding assistant usage quotas. Kee
 
 ## Features
 
-- **Multi-Provider Support** - Monitor Claude, Codex, and Gemini quotas in one place
+- **Multi-Provider Support** - Monitor Claude, Codex, Gemini, and GitHub Copilot quotas in one place
 - **Real-Time Quota Tracking** - View Session, Weekly, and Model-specific usage percentages
 - **Light & Dark Themes** - Automatically adapts to your system appearance
 - **Visual Status Indicators** - Color-coded progress bars (green/yellow/red) show quota health
@@ -45,6 +45,7 @@ A macOS menu bar application that monitors AI coding assistant usage quotas. Kee
   - [Claude CLI](https://claude.ai/code) (`claude`)
   - [Codex CLI](https://github.com/openai/codex) (`codex`)
   - [Gemini CLI](https://github.com/google-gemini/gemini-cli) (`gemini`)
+  - [GitHub Copilot](https://github.com/features/copilot) - Configure credentials in Settings
 
 ## Installation
 
@@ -110,7 +111,7 @@ ClaudeBar uses a layered architecture with protocol-based dependency injection:
                         ▼
 ┌─────────────────────────────────────────────────┐
 │              Infrastructure Layer               │
-│  Probes: ClaudeUsageProbe, CodexUsageProbe, etc │
+│  Probes: Claude, Codex, Gemini, Copilot probes  │
 │  Adapters: Pure 3rd-party wrappers (no coverage)│
 └─────────────────────────────────────────────────┘
 ```
