@@ -918,106 +918,109 @@ extension View {
     }
 }
 
-// MARK: - Snowfall Effect
+// MARK: - Snowfall Effect (Canvas + TimelineView)
 
-struct SnowflakeView: View {
+/// Pre-computed snowflake properties
+private struct Snowflake {
     let size: CGFloat
-    let startX: CGFloat
-    let startY: CGFloat
-    let duration: Double
-    let delay: Double
+    let xRatio: CGFloat        // 0-1 position ratio
+    let speed: CGFloat         // fall speed multiplier
+    let driftAmp: CGFloat      // horizontal drift amplitude
+    let driftFreq: CGFloat     // drift frequency
+    let driftPhase: CGFloat    // drift phase offset
+    let rotationSpeed: CGFloat
+    let opacity: Double
+    let delay: Double          // stagger start time
+    let dismissAt: Double      // 0.5-1.0: when to fade out (1.0 = at bottom)
+}
 
-    @State private var yOffset: CGFloat = 0
-    @State private var xOffset: CGFloat = 0
-    @State private var rotation: Double = 0
-    @State private var glowOpacity: Double = 0.6
-
-    var body: some View {
-        ZStack {
-            // Glow effect behind snowflake
-            Image(systemName: "snowflake")
-                .font(.system(size: size * 1.5))
-                .foregroundStyle(AppTheme.christmasSnow.opacity(glowOpacity * 0.3))
-                .blur(radius: 3)
-
-            // Main snowflake
-            Image(systemName: "snowflake")
-                .font(.system(size: size, weight: .light))
-                .foregroundStyle(AppTheme.christmasSnow.opacity(glowOpacity))
-        }
-        .rotationEffect(.degrees(rotation))
-        .position(x: startX + xOffset, y: startY + yOffset)
-        .onAppear {
-            // Falling animation
-            withAnimation(
-                .linear(duration: duration)
-                .delay(delay)
-                .repeatForever(autoreverses: false)
-            ) {
-                yOffset = 700
-                xOffset = CGFloat.random(in: -40...40)
-            }
-
-            // Rotation animation
-            withAnimation(
-                .linear(duration: duration * 0.4)
-                .delay(delay)
-                .repeatForever(autoreverses: true)
-            ) {
-                rotation = Double.random(in: -360...360)
-            }
-
-            // Twinkle effect
-            withAnimation(
-                .easeInOut(duration: 1.5)
-                .delay(delay)
-                .repeatForever(autoreverses: true)
-            ) {
-                glowOpacity = Double.random(in: 0.4...1.0)
-            }
-        }
+/// Generate snowflakes with seeded random
+private func generateSnowflakes(count: Int, seed: Int) -> [Snowflake] {
+    srand48(seed)
+    return (0..<count).map { i in
+        let dismissEarly = drand48() < 0.4  // 40% dismiss early
+        return Snowflake(
+            size: CGFloat(6 + drand48() * 10),
+            xRatio: CGFloat(drand48()),
+            speed: CGFloat(0.6 + drand48() * 0.8),
+            driftAmp: CGFloat(15 + drand48() * 25),
+            driftFreq: CGFloat(0.3 + drand48() * 0.4),
+            driftPhase: CGFloat(drand48() * .pi * 2),
+            rotationSpeed: CGFloat(20 + drand48() * 40),
+            opacity: 0.5 + drand48() * 0.45,
+            delay: Double(i) * 0.8,
+            dismissAt: dismissEarly ? 0.45 + drand48() * 0.4 : 1.0
+        )
     }
 }
 
 struct SnowfallOverlay: View {
     let snowflakeCount: Int
+    private let snowflakes: [Snowflake]
+
+    init(snowflakeCount: Int) {
+        self.snowflakeCount = snowflakeCount
+        self.snowflakes = generateSnowflakes(count: min(snowflakeCount, 20), seed: 42)
+    }
 
     var body: some View {
-        GeometryReader { geo in
-            ZStack {
-                // Layer 1: Background snowflakes (smaller, slower)
-                ForEach(0..<snowflakeCount, id: \.self) { i in
-                    SnowflakeView(
-                        size: CGFloat.random(in: 6...12),
-                        startX: CGFloat.random(in: 0...geo.size.width),
-                        startY: CGFloat.random(in: -100...0),
-                        duration: Double.random(in: 6...10),
-                        delay: Double(i) * 0.15
-                    )
-                }
+        TimelineView(.animation(minimumInterval: 1.0 / 30.0)) { timeline in
+            let time = timeline.date.timeIntervalSinceReferenceDate
 
-                // Layer 2: Foreground snowflakes (larger, faster)
-                ForEach(0..<(snowflakeCount / 2), id: \.self) { i in
-                    SnowflakeView(
-                        size: CGFloat.random(in: 10...16),
-                        startX: CGFloat.random(in: 0...geo.size.width),
-                        startY: CGFloat.random(in: -80...0),
-                        duration: Double.random(in: 4...7),
-                        delay: Double(i) * 0.2 + 0.5
-                    )
-                }
+            Canvas { context, size in
+                guard let symbol = context.resolveSymbol(id: 0) else { return }
 
-                // Layer 3: Sparkle dots (tiny, scattered)
-                ForEach(0..<(snowflakeCount / 3), id: \.self) { i in
-                    Circle()
-                        .fill(AppTheme.christmasSnow.opacity(Double.random(in: 0.3...0.7)))
-                        .frame(width: CGFloat.random(in: 2...4), height: CGFloat.random(in: 2...4))
-                        .position(
-                            x: CGFloat.random(in: 0...geo.size.width),
-                            y: CGFloat.random(in: 0...geo.size.height)
-                        )
-                        .blur(radius: 0.5)
+                for flake in snowflakes {
+                    // Calculate fall progress (loops every ~10 seconds based on speed)
+                    let cycleDuration = 10.0 / Double(flake.speed)
+                    let t = ((time - flake.delay).truncatingRemainder(dividingBy: cycleDuration)) / cycleDuration
+
+                    // Skip if before delay
+                    guard time > flake.delay else { continue }
+
+                    // Ensure t is positive
+                    let progress = t < 0 ? t + 1 : t
+
+                    // Y position: fall from top to bottom
+                    let y = -30 + progress * (size.height + 60)
+
+                    // X position: base + drift
+                    let drift = sin(time * Double(flake.driftFreq) + Double(flake.driftPhase)) * Double(flake.driftAmp)
+                    let x = Double(flake.xRatio) * size.width + drift
+
+                    // Rotation
+                    let rotation = Angle.degrees(time * Double(flake.rotationSpeed))
+
+                    // Opacity with fade in/out and random dismissal
+                    var opacity = flake.opacity
+
+                    // Fade in
+                    if progress < 0.1 {
+                        opacity *= progress / 0.1
+                    }
+
+                    // Fade out at dismissAt point
+                    if progress > flake.dismissAt - 0.1 {
+                        let fadeProgress = (progress - (flake.dismissAt - 0.1)) / 0.1
+                        opacity *= max(0, 1.0 - fadeProgress)
+                    }
+
+                    // Skip if invisible
+                    guard opacity > 0.02 else { continue }
+
+                    // Draw
+                    var ctx = context
+                    ctx.opacity = opacity
+                    ctx.translateBy(x: x, y: y)
+                    ctx.rotate(by: rotation)
+                    ctx.scaleBy(x: flake.size / 14, y: flake.size / 14)
+                    ctx.draw(symbol, at: .zero)
                 }
+            } symbols: {
+                Image(systemName: "snowflake")
+                    .font(.system(size: 14, weight: .light))
+                    .foregroundStyle(AppTheme.christmasSnow)
+                    .tag(0)
             }
         }
         .allowsHitTesting(false)
