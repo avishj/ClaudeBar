@@ -97,8 +97,27 @@ jobs:
 
       - name: Install Dependencies & Generate Xcode Project
         run: |
-          tuist install
+          echo "=== Tuist version ==="
+          tuist version
+
+          echo "=== Installing dependencies ==="
+          tuist install || echo "tuist install not available, skipping..."
+
+          echo "=== Generating project ==="
           tuist generate --no-open
+
+          echo "=== Generated files ==="
+          ls -la
+          ls -la ClaudeBar.xcworkspace/ || true
+
+          echo "=== Available schemes ==="
+          xcodebuild -workspace ClaudeBar.xcworkspace -list
+
+      - name: Resolve Package Dependencies
+        run: |
+          xcodebuild -resolvePackageDependencies \
+            -workspace ClaudeBar.xcworkspace \
+            -scheme ClaudeBar
 
       - name: Build Universal App Bundle
         run: |
