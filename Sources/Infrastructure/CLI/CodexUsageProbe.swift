@@ -1,9 +1,7 @@
 import Foundation
 import Domain
 import Mockable
-import os.log
-
-private let logger = Logger(subsystem: "com.claudebar", category: "CodexProbe")
+import OSLog
 
 // MARK: - Codex Service Protocol
 
@@ -55,15 +53,15 @@ public struct CodexUsageProbe: UsageProbe {
     }
 
     public func probe() async throws -> UsageSnapshot {
-        logger.info("Starting Codex probe...")
+        Logger.probes.info("Starting Codex probe...")
         defer { client.shutdown() }
 
         let limits = try await client.fetchRateLimits()
         let snapshot = try Self.mapRateLimitsToSnapshot(limits)
 
-        logger.info("Codex probe success: \(snapshot.quotas.count) quotas found")
+        Logger.probes.info("Codex probe success: \(snapshot.quotas.count) quotas found")
         for quota in snapshot.quotas {
-            logger.info("  - \(quota.quotaType.displayName): \(Int(quota.percentRemaining))% remaining")
+            Logger.probes.info("  - \(quota.quotaType.displayName): \(Int(quota.percentRemaining))% remaining")
         }
         return snapshot
     }

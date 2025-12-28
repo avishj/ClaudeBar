@@ -166,6 +166,39 @@ git push origin v1.0.0
 
 Or use the manual workflow dispatch in GitHub Actions with version input.
 
+## Logging
+
+The app uses Apple's **OSLog framework** via a centralized `Logger` extension in `Sources/App/AppLogger.swift`.
+
+### Logger Categories
+
+```swift
+Logger.monitor        // QuotaMonitor operations
+Logger.providers      // AI provider lifecycle  
+Logger.probes         // CLI probe execution
+Logger.network        // HTTP requests/responses
+Logger.credentials    // Token management (use .private!)
+Logger.ui             // SwiftUI view lifecycle
+Logger.notifications  // System notifications
+Logger.updates        // Sparkle updates
+```
+
+### Privacy Rules
+
+- **Always use `.private`** for: tokens, API keys, CLI output, usernames
+- **Use `.private(mask: .hash)`** for: correlation IDs you need to track
+- **Safe as `.public`**: provider names, status enums, counts, URLs
+
+### Viewing Logs
+
+```bash
+# Console.app filter
+subsystem:com.tddworks.ClaudeBar
+
+# Terminal
+log show --predicate 'subsystem == "com.tddworks.ClaudeBar"' --last 1h
+```
+
 ## Dependencies
 
 - **Sparkle**: Auto-update framework for macOS

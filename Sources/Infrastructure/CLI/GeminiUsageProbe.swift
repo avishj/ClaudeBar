@@ -1,8 +1,6 @@
 import Foundation
 import Domain
-import os.log
-
-private let logger = Logger(subsystem: "com.claudebar", category: "GeminiProbe")
+import OSLog
 
 /// Infrastructure adapter that probes the Gemini API to fetch usage quotas.
 /// Uses OAuth credentials stored by the Gemini CLI, with CLI fallback.
@@ -32,7 +30,7 @@ public struct GeminiUsageProbe: UsageProbe {
     }
 
     public func probe() async throws -> UsageSnapshot {
-        logger.info("Starting Gemini probe...")
+        Logger.probes.info("Starting Gemini probe...")
 
         // Strategy: Try CLI first, fall back to API
         // This logic is now coordinated here, while implementation details are in sub-probes.
@@ -52,7 +50,7 @@ public struct GeminiUsageProbe: UsageProbe {
 //        do {
 //            return try await cliProbe.probe()
 //        } catch {
-//            logger.warning("Gemini CLI failed: \(error.localizedDescription), trying API fallback...")
+//            Logger.probes.warning("Gemini CLI failed: \(error.localizedDescription), trying API fallback...")
 //            
 //            let apiProbe = GeminiAPIProbe(
 //                homeDirectory: homeDirectory,

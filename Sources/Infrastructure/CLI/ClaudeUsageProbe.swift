@@ -1,8 +1,6 @@
 import Foundation
 import Domain
-import os.log
-
-private let logger = Logger(subsystem: "com.claudebar", category: "ClaudeProbe")
+import OSLog
 
 /// Infrastructure adapter that probes the Claude CLI to fetch usage quotas.
 /// Implements the UsageProbe protocol from the domain layer.
@@ -26,7 +24,7 @@ public final class ClaudeUsageProbe: UsageProbe, @unchecked Sendable {
     }
 
     public func probe() async throws -> UsageSnapshot {
-        logger.info("Starting Claude probe with /usage command...")
+        Logger.probes.info("Starting Claude probe with /usage command...")
 
         let usageResult: CLIResult
         do {
@@ -44,19 +42,19 @@ public final class ClaudeUsageProbe: UsageProbe, @unchecked Sendable {
                 ]
             )
         } catch {
-            logger.error("Claude /usage probe failed: \(error.localizedDescription)")
+            Logger.probes.error("Claude /usage probe failed: \(error.localizedDescription)")
             throw ProbeError.executionFailed(error.localizedDescription)
         }
 
-        logger.debug("Claude /usage output:\n\(usageResult.output)")
+        Logger.probes.debug("Claude /usage output:\n\(usageResult.output)")
 
         let snapshot = try parseClaudeOutput(usageResult.output)
-        logger.info("Claude probe success: accountType=\(snapshot.accountType?.rawValue ?? "unknown"), quotas=\(snapshot.quotas.count)")
+        Logger.probes.info("Claude probe success: accountType=\(snapshot.accountType?.rawValue ?? "unknown"), quotas=\(snapshot.quotas.count)")
         for quota in snapshot.quotas {
-            logger.info("  - \(quota.quotaType.displayName): \(Int(quota.percentRemaining))% remaining")
+            Logger.probes.info("  - \(quota.quotaType.displayName): \(Int(quota.percentRemaining))% remaining")
         }
         if let cost = snapshot.costUsage {
-            logger.info("  - Extra usage: \(cost.formattedCost) / \(cost.formattedBudget ?? "N/A")")
+            Logger.probes.info("  - Extra usage: \(cost.formattedCost) / \(cost.formattedBudget ?? "N/A")")
         }
 
         return snapshot
@@ -154,36 +152,36 @@ public final class ClaudeUsageProbe: UsageProbe, @unchecked Sendable {
     /// or "Opus 4.5 · Claude Pro · email@example.com's Organization"
     internal func detectAccountType(_ text: String) -> ClaudeAccountType {
         let lower = text.lowercased()
-        logger.debug("Detecting account type from /usage output...")
+        Logger.probes.debug("Detecting account type from /usage output...")
 
         // Check for Claude Pro in header (e.g., "Opus 4.5 · Claude Pro")
         if lower.contains("· claude pro") || lower.contains("·claude pro") {
-            logger.info("Detected Claude Pro account from header")
+            Logger.probes.info("Detected Claude Pro account from header")
             return .pro
         }
 
         // Check for Claude Max in header (e.g., "Opus 4.5 · Claude Max")
         if lower.contains("· claude max") || lower.contains("·claude max") {
-            logger.info("Detected Claude Max account from header")
+            Logger.probes.info("Detected Claude Max account from header")
             return .max
         }
 
         // Check for Claude API (unlikely in /usage, but check anyway)
         if lower.contains("· claude api") || lower.contains("·claude api") ||
            lower.contains("api account") {
-            logger.info("Detected Claude API account from header")
+            Logger.probes.info("Detected Claude API account from header")
             return .api
         }
 
         // Fallback: Check for presence of quota data (subscription accounts have quotas)
         let hasSessionQuota = lower.contains("current session") && (lower.contains("% left") || lower.contains("% used"))
         if hasSessionQuota {
-            logger.info("Detected subscription account from quota data, defaulting to Max")
+            Logger.probes.info("Detected subscription account from quota data, defaulting to Max")
             return .max
         }
 
         // Default to Max if we can't determine
-        logger.warning("Could not determine account type, defaulting to Max")
+        Logger.probes.warning("Could not determine account type, defaulting to Max")
         return .max
     }
 
@@ -202,7 +200,7 @@ public final class ClaudeUsageProbe: UsageProbe, @unchecked Sendable {
 
         // Check if Extra usage is not enabled
         if lower.contains("extra usage not enabled") {
-            logger.debug("Extra usage not enabled for this account")
+            Logger.probes.debug("Extra usage not enabled for this account")
             return nil
         }
 

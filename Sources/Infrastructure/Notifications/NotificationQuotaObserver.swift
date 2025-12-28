@@ -1,5 +1,6 @@
 import Foundation
 import Domain
+import OSLog
 
 /// Infrastructure adapter that sends macOS notifications when quota status changes.
 /// Implements StatusChangeObserver from the domain layer.
@@ -12,30 +13,44 @@ public final class NotificationQuotaObserver: StatusChangeObserver, @unchecked S
 
     /// Requests notification permission from the user
     public func requestPermission() async -> Bool {
-        await notificationService.requestPermission()
+        Logger.notifications.debug("Requesting notification permission...")
+        let granted = await notificationService.requestPermission()
+        Logger.notifications.info("Notification permission: \(granted ? "granted" : "denied")")
+        return granted
     }
 
     // MARK: - StatusChangeObserver
 
     public func onStatusChanged(providerId: String, oldStatus: QuotaStatus, newStatus: QuotaStatus) async {
+        Logger.notifications.debug("Status change: \(providerId) \(String(describing: oldStatus)) -> \(String(describing: newStatus))")
+        
         // Only notify on degradation (getting worse)
-        guard newStatus > oldStatus else { return }
+        guard newStatus > oldStatus else {
+            Logger.notifications.debug("Status improved or same, skipping notification")
+            return
+        }
 
         // Skip if status improved or stayed the same
-        guard shouldNotify(for: newStatus) else { return }
+        guard shouldNotify(for: newStatus) else {
+            Logger.notifications.debug("Status \(String(describing: newStatus)) does not require notification")
+            return
+        }
 
         let providerName = providerDisplayName(for: providerId)
         let title = "\(providerName) Quota Alert"
         let body = notificationBody(for: newStatus, providerName: providerName)
 
+        Logger.notifications.notice("Sending quota alert for \(providerId): \(String(describing: newStatus))")
+        
         do {
             try await notificationService.send(
                 title: title,
                 body: body,
                 categoryIdentifier: "QUOTA_ALERT"
             )
+            Logger.notifications.info("Notification sent successfully")
         } catch {
-            // Silently fail - notifications are non-critical
+            Logger.notifications.error("Failed to send notification: \(error.localizedDescription)")
         }
     }
 
