@@ -6,7 +6,7 @@ import Domain
 public struct AntigravityUsageProbe: UsageProbe {
 
     private let cliExecutor: any CLIExecutor
-    private let insecureSession: URLSession
+    private let networkClient: any NetworkClient
     private let timeout: TimeInterval
 
     // Match both Intel and ARM binaries
@@ -14,20 +14,13 @@ public struct AntigravityUsageProbe: UsageProbe {
 
     public init(
         cliExecutor: (any CLIExecutor)? = nil,
+        networkClient: (any NetworkClient)? = nil,
         timeout: TimeInterval = 8.0
     ) {
         self.cliExecutor = cliExecutor ?? DefaultCLIExecutor()
+        // Use insecure client by default for self-signed localhost certificates
+        self.networkClient = networkClient ?? InsecureLocalhostNetworkClient(timeout: timeout)
         self.timeout = timeout
-
-        // Create a session that accepts self-signed certificates for localhost
-        let config = URLSessionConfiguration.ephemeral
-        config.timeoutIntervalForRequest = timeout
-        config.timeoutIntervalForResource = timeout
-        self.insecureSession = URLSession(
-            configuration: config,
-            delegate: InsecureLocalhostDelegate(),
-            delegateQueue: nil
-        )
     }
 
     // MARK: - UsageProbe
@@ -229,8 +222,8 @@ public struct AntigravityUsageProbe: UsageProbe {
         ]
         request.httpBody = try? JSONSerialization.data(withJSONObject: body)
 
-        // Use insecure session for self-signed localhost certificates
-        let (data, response) = try await insecureSession.data(for: request)
+        // Use network client (insecure by default for self-signed localhost certs)
+        let (data, response) = try await networkClient.request(request)
 
         guard let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 else {
             throw ProbeError.executionFailed("API request failed")
@@ -435,30 +428,3 @@ private struct QuotaInfo: Decodable {
     let resetTime: String?
 }
 
-// MARK: - Insecure Session Delegate
-
-/// URLSession delegate that accepts self-signed certificates for localhost connections.
-/// This is required because Antigravity's local language server uses self-signed certs.
-private final class InsecureLocalhostDelegate: NSObject, URLSessionDelegate {
-    func urlSession(
-        _ session: URLSession,
-        didReceive challenge: URLAuthenticationChallenge,
-        completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void
-    ) {
-        // Only trust localhost connections
-        guard let host = challenge.protectionSpace.host.lowercased() as String?,
-              host == "127.0.0.1" || host == "localhost" else {
-            completionHandler(.performDefaultHandling, nil)
-            return
-        }
-
-        // Accept any certificate for localhost
-        if challenge.protectionSpace.authenticationMethod == NSURLAuthenticationMethodServerTrust,
-           let serverTrust = challenge.protectionSpace.serverTrust {
-            let credential = URLCredential(trust: serverTrust)
-            completionHandler(.useCredential, credential)
-        } else {
-            completionHandler(.performDefaultHandling, nil)
-        }
-    }
-}
