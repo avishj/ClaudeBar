@@ -135,24 +135,36 @@ public struct UsageQuota: Sendable, Equatable {
 }
 ```
 
-### 2. Swift 6.2 Patterns (No ViewModel Layer)
+### 2. Swift 6.2 Patterns (No ViewModel/AppState Layer)
 
-Use `@Observable` classes with views consuming domain models directly:
+Views consume domain models directly from `QuotaMonitor`:
 
 ```swift
-@Observable
-final class AppState {
-    var providers: [any AIProvider] = []
-    var overallStatus: QuotaStatus {
-        providers.compactMap(\.snapshot?.overallStatus).max() ?? .healthy
-    }
+// QuotaMonitor is the single source of truth
+public actor QuotaMonitor {
+    public nonisolated let providers: AIProviders  // Repository
+    public nonisolated var selectedProviderId: String
+    public nonisolated var selectedProvider: (any AIProvider)?
+    public nonisolated var selectedProviderStatus: QuotaStatus
 }
 
-struct ProviderSectionView: View {
-    let snapshot: UsageSnapshot  // Domain model directly
+// AIProviders is the repository (rich domain model)
+@Observable
+public final class AIProviders {
+    public private(set) var all: [any AIProvider]
+    public var enabled: [any AIProvider] { all.filter { $0.isEnabled } }
+    public func add(_ provider: any AIProvider)
+    public func remove(id: String)
+}
+
+// Views consume domain directly - NO AppState layer
+struct MenuContentView: View {
+    let monitor: QuotaMonitor  // Injected from app
 
     var body: some View {
-        Text(snapshot.overallStatus.displayName)
+        ForEach(monitor.providers.enabled, id: \.id) { provider in
+            ProviderPill(provider: provider)
+        }
     }
 }
 ```
@@ -170,20 +182,45 @@ public protocol UsageProbe: Sendable {
 ## Architecture
 
 ```
-Domain (Sources/Domain/)
-├── Rich models with behavior
-├── Protocols defining capabilities
-└── Actors for thread-safe services
+┌─────────────────────────────────────────────────────────────────────┐
+│                         DOMAIN LAYER                                 │
+│                                                                      │
+│  QuotaMonitor (actor) - Single Source of Truth                      │
+│  ├── providers: AIProviders (repository)                            │
+│  ├── selectedProviderId, selectedProvider, selectedProviderStatus   │
+│  ├── refreshAll(), selectProvider(), ensureValidSelection()         │
+│  └── overallStatus(), enabledProviders                              │
+│                                                                      │
+│  AIProviders (@Observable) - Repository                              │
+│  ├── all: [AIProvider]                                              │
+│  ├── enabled: [AIProvider] (computed, filters by isEnabled)         │
+│  └── add(), remove(), provider(id:)                                 │
+│                                                                      │
+│  AIProvider (@Observable) - Rich Domain Model                        │
+│  ├── isEnabled: Bool (persisted to UserDefaults)                    │
+│  ├── snapshot: UsageSnapshot?                                       │
+│  └── refresh() async                                                │
+│                                                                      │
+└─────────────────────────────────────────────────────────────────────┘
+                              │
+                              │ Views consume directly
+                              ▼
+┌─────────────────────────────────────────────────────────────────────┐
+│                           APP LAYER                                  │
+│                                                                      │
+│  ClaudeBarApp                                                       │
+│  └── @State var monitor: QuotaMonitor  (injected to views)          │
+│                                                                      │
+│  Views                                                              │
+│  ├── MenuContentView(monitor: QuotaMonitor)                         │
+│  ├── SettingsView(monitor: QuotaMonitor)                            │
+│  └── NO AppState, NO ViewModel - consume domain directly            │
+│                                                                      │
+└─────────────────────────────────────────────────────────────────────┘
 
 Infrastructure (Sources/Infrastructure/)
-├── Protocol implementations
-├── CLI probes, network clients
+├── Protocol implementations (probes, network clients)
 └── Adapters (excluded from coverage)
-
-App (Sources/App/)
-├── Views with domain models
-├── @Observable AppState
-└── No ViewModel layer
 ```
 
 ## TDD Workflow (Chicago School)
