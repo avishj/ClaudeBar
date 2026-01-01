@@ -186,33 +186,63 @@ App (Sources/App/)
 └── No ViewModel layer
 ```
 
-## TDD Workflow
+## TDD Workflow (Chicago School)
+
+We follow **Chicago school TDD** (state-based testing):
+- Test **state changes** and **return values**, not interactions
+- Focus on the "what" (observable outcomes), not the "how" (method calls)
+- Mocks stub dependencies to return data, not to verify calls
+- Design emerges from tests (emergent design)
 
 ### Phase 1: Domain Model Tests
+
+Test state and computed properties:
 
 ```swift
 @Suite
 struct FeatureModelTests {
     @Test func `model computes status from state`() {
+        // Given - set up initial state
         let model = FeatureModel(value: 50)
+
+        // When/Then - verify state/return value
         #expect(model.status == .normal)
+    }
+
+    @Test func `model state changes correctly`() {
+        // Given
+        var model = FeatureModel(value: 100)
+
+        // When - perform action
+        model.consume(30)
+
+        // Then - verify new state
+        #expect(model.value == 70)
+        #expect(model.status == .healthy)
     }
 }
 ```
 
 ### Phase 2: Infrastructure Tests
 
+Stub dependencies to return data, assert on resulting state:
+
 ```swift
 @Suite
 struct FeatureServiceTests {
-    @Test func `service returns data on success`() async throws {
+    @Test func `service returns parsed data on success`() async throws {
+        // Given - stub dependency to return data (not verify calls)
         let mockClient = MockNetworkClient()
-        given(mockClient).fetch(...).willReturn(Data())
+        given(mockClient).fetch(any()).willReturn(validResponseData)
 
         let service = FeatureService(client: mockClient)
+
+        // When
         let result = try await service.fetch()
 
-        #expect(result != nil)
+        // Then - verify returned state, not interactions
+        #expect(result.items.count == 3)
+        #expect(result.status == .loaded)
     }
 }
 ```
@@ -236,12 +266,14 @@ Wire up in `ClaudeBarApp.swift` and create views.
 - [ ] Document component table (purpose, inputs, outputs, dependencies)
 - [ ] **Get user approval before proceeding**
 
-### Implementation (Phases 1-3)
+### Implementation (Phases 1-3) - Chicago School TDD
+- [ ] Write failing test asserting expected STATE (Red)
+- [ ] Write minimal code to pass the test (Green)
+- [ ] Refactor while keeping tests green
 - [ ] Define domain models in `Sources/Domain/` with behavior
-- [ ] Write domain model tests (test behavior, not data)
-- [ ] Define protocols with `@Mockable`
+- [ ] Test state changes and return values (not interactions)
+- [ ] Define protocols with `@Mockable` for external dependencies
+- [ ] Stub mocks to return data, assert on resulting state
 - [ ] Implement infrastructure in `Sources/Infrastructure/`
-- [ ] Write infrastructure tests with mocks
 - [ ] Create views consuming domain models directly
-- [ ] Use `@Observable` for shared state
 - [ ] Run `swift test` to verify all tests pass

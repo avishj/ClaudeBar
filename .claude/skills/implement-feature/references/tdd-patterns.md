@@ -1,4 +1,14 @@
-# TDD Test Patterns
+# TDD Test Patterns (Chicago School)
+
+We follow **Chicago school TDD** (state-based testing):
+
+| Chicago School (We Use This)          | London School (Avoid)                    |
+|---------------------------------------|------------------------------------------|
+| Test state changes and return values  | Test interactions between objects        |
+| Mocks stub data, not verify calls     | Mocks verify method calls were made      |
+| Focus on "what" (outcomes)            | Focus on "how" (behavior)                |
+| Design emerges from tests             | Design upfront, tests verify design      |
+| Fewer, coarser-grained tests          | Many fine-grained interaction tests      |
 
 ## Swift Testing Framework
 
@@ -34,9 +44,9 @@ struct UsageQuotaTests {
 }
 ```
 
-## Mocking with @Mockable
+## Mocking with @Mockable (Chicago Style)
 
-Define mockable protocols:
+Define mockable protocols for external dependencies:
 
 ```swift
 import Mockable
@@ -54,7 +64,7 @@ public protocol CLIExecutor: Sendable {
 }
 ```
 
-Use mocks in tests:
+**Chicago school mock usage** - stub return values, verify resulting state:
 
 ```swift
 import Mockable
@@ -62,7 +72,7 @@ import Mockable
 @Suite
 struct QuotaMonitorTests {
     @Test func `monitor can refresh a provider by ID`() async throws {
-        // Given
+        // Given - STUB dependencies to return data
         let probe = MockUsageProbe()
         given(probe).isAvailable().willReturn(true)
         given(probe).probe().willReturn(UsageSnapshot(
@@ -76,12 +86,15 @@ struct QuotaMonitorTests {
         // When
         await monitor.refresh(providerId: "claude")
 
-        // Then
+        // Then - verify STATE, not that methods were called
         #expect(provider.snapshot != nil)
         #expect(provider.snapshot?.quotas.count == 1)
+        // ❌ AVOID: verify(probe).probe().called(1)  // London school - don't do this
     }
 }
 ```
+
+**Key principle**: Use `given().willReturn()` to stub data. Avoid `verify().called()` for interactions.
 
 ## Parsing Tests
 
@@ -174,3 +187,29 @@ swift test --filter DomainTests
 # Run specific test
 swift test --filter "UsageQuotaTests/quota at zero percent is depleted"
 ```
+
+## Chicago School Summary
+
+### What to Test
+
+| Test Type           | What to Assert                                    |
+|---------------------|---------------------------------------------------|
+| Domain models       | Computed properties, state after mutations        |
+| Services/Probes     | Return values, thrown errors, resulting state     |
+| Actors              | State after operations complete                   |
+
+### What NOT to Test
+
+- That a method was called N times
+- The order of internal method calls
+- Implementation details that don't affect observable state
+
+### Red-Green-Refactor Cycle
+
+```
+1. RED    - Write a failing test that asserts expected STATE
+2. GREEN  - Write minimal code to make the test pass
+3. REFACTOR - Improve code while keeping tests green
+```
+
+Design emerges from this cycle - don't design upfront, let tests guide you.
