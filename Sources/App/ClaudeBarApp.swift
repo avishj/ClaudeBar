@@ -44,6 +44,10 @@ struct ClaudeBarApp: App {
             providers: repository,
             alerter: quotaAlerter
         )
+
+        // Ensure the selected provider is valid (e.g., if Claude was disabled before restart)
+        monitor.ensureValidSelection()
+
         AppLog.monitor.info("QuotaMonitor initialized")
 
         // Note: Notification permission is requested in onAppear, not here

@@ -700,4 +700,41 @@ struct QuotaMonitorTests {
         // Then - only claude's healthy status matters
         #expect(monitor.overallStatus == .healthy)
     }
+
+    // MARK: - Set Provider Enabled
+
+    @Test
+    func `setProviderEnabled disables provider and updates selection`() {
+        // Given
+        let settings = makeSettingsRepository()
+        let claude = ClaudeProvider(probe: MockUsageProbe(), settingsRepository: settings)
+        let codex = CodexProvider(probe: MockUsageProbe(), settingsRepository: settings)
+        let monitor = QuotaMonitor(providers: AIProviders(providers: [claude, codex]))
+        monitor.selectedProviderId = "claude"
+
+        // When - disable the currently selected provider
+        monitor.setProviderEnabled("claude", enabled: false)
+
+        // Then - provider is disabled and selection switches to first enabled
+        #expect(claude.isEnabled == false)
+        #expect(monitor.selectedProviderId == "codex")
+    }
+
+    @Test
+    func `setProviderEnabled enables provider without changing selection`() {
+        // Given
+        let settings = makeSettingsRepository()
+        let claude = ClaudeProvider(probe: MockUsageProbe(), settingsRepository: settings)
+        let codex = CodexProvider(probe: MockUsageProbe(), settingsRepository: settings)
+        codex.isEnabled = false
+        let monitor = QuotaMonitor(providers: AIProviders(providers: [claude, codex]))
+        monitor.selectedProviderId = "claude"
+
+        // When - enable a different provider
+        monitor.setProviderEnabled("codex", enabled: true)
+
+        // Then - provider is enabled, selection unchanged
+        #expect(codex.isEnabled == true)
+        #expect(monitor.selectedProviderId == "claude")
+    }
 }

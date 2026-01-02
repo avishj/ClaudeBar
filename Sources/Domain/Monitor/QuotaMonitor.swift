@@ -183,6 +183,17 @@ public final class QuotaMonitor: @unchecked Sendable {
         }
     }
 
+    /// Sets a provider's enabled state and ensures valid selection.
+    /// Use this instead of setting provider.isEnabled directly to ensure
+    /// the selected provider remains valid when a provider is disabled.
+    public func setProviderEnabled(_ id: String, enabled: Bool) {
+        guard let provider = providers.provider(id: id) else { return }
+        provider.isEnabled = enabled
+        if !enabled {
+            ensureValidSelection()
+        }
+    }
+
     // MARK: - Continuous Monitoring
 
     /// Starts continuous monitoring at the specified interval.

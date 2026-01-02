@@ -34,7 +34,7 @@ struct SettingsContentView: View {
     private var copilotEnabledBinding: Binding<Bool> {
         Binding(
             get: { copilotProvider?.isEnabled ?? false },
-            set: { newValue in copilotProvider?.isEnabled = newValue }
+            set: { newValue in monitor.setProviderEnabled("copilot", enabled: newValue) }
         )
     }
 
@@ -248,7 +248,7 @@ struct SettingsContentView: View {
 
             Toggle("", isOn: Binding(
                 get: { provider.isEnabled },
-                set: { provider.isEnabled = $0 }
+                set: { monitor.setProviderEnabled(provider.id, enabled: $0) }
             ))
             .toggleStyle(.switch)
             .tint(AppTheme.purpleVibrant(for: colorScheme))

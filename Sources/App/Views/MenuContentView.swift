@@ -295,12 +295,6 @@ struct MenuContentView: View {
         .opacity(animateIn ? 1 : 0)
         .offset(y: animateIn ? 0 : 10)
         .animation(.easeOut(duration: 0.5).delay(0.1), value: animateIn)
-        .onChange(of: enabledProviders.map(\.id)) { _, newIds in
-            // If currently selected provider is disabled, select first enabled one
-            if !newIds.contains(selectedProviderId), let firstId = newIds.first {
-                selectedProviderId = firstId
-            }
-        }
     }
 
     // MARK: - Metrics Content
