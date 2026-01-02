@@ -14,19 +14,13 @@ Add new AI providers following established TDD patterns and architecture.
 
 ## Architecture Overview
 
-```
-Domain Layer (Sources/Domain/Provider/)
-├── AIProvider protocol      → Provider class (e.g., AntigravityProvider)
-└── UsageProbe protocol      → Implemented by Infrastructure
+> **Full architecture:** [docs/ARCHITECTURE.md](../../../docs/ARCHITECTURE.md)
 
-Infrastructure Layer (Sources/Infrastructure/CLI/)
-├── *UsageProbe.swift        → Implements UsageProbe protocol
-└── Uses: CLIExecutor, NetworkClient (mockable)
-
-Tests (Tests/InfrastructureTests/CLI/)
-├── *UsageProbeParsingTests.swift   → Test parsing logic
-└── *UsageProbeTests.swift          → Test probe behavior
-```
+| Component | Location | Purpose |
+|-----------|----------|---------|
+| `AIProvider` | `Sources/Domain/Provider/` | Rich domain model with isEnabled state |
+| `UsageProbe` | `Sources/Infrastructure/CLI/` | Fetches quota from CLI/API |
+| Tests | `Tests/InfrastructureTests/CLI/` | Parsing + behavior tests |
 
 ## TDD Workflow
 
