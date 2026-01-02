@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.13] - 2026-01-02
+
+### Improved
+- **Settings Scrolling**: Settings view now scrolls on small screens, ensuring all options remain accessible regardless of display size.
+
+### Fixed
+- **Provider Selection After Restart**: Disabled providers no longer appear selected after app restart. The app now automatically switches to the first enabled provider.
+
+### Technical
+- `QuotaMonitor` now maintains selection invariants (auto-selects valid provider on init and when providers are disabled)
+- Added `setProviderEnabled()` API for toggling providers with automatic selection handling
+
 ## [0.2.12] - 2026-01-02
 
 ### Added
@@ -187,7 +199,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Menu bar interface with quota display
 - Automatic refresh every 5 minutes
 
-[Unreleased]: https://github.com/tddworks/ClaudeBar/compare/v0.2.12...HEAD
+[Unreleased]: https://github.com/tddworks/ClaudeBar/compare/v0.2.13...HEAD
+[0.2.13]: https://github.com/tddworks/ClaudeBar/compare/v0.2.12...v0.2.13
 [0.2.12]: https://github.com/tddworks/ClaudeBar/compare/v0.2.11...v0.2.12
 [0.2.11]: https://github.com/tddworks/ClaudeBar/compare/v0.2.10...v0.2.11
 [0.2.10]: https://github.com/tddworks/ClaudeBar/compare/v0.2.9...v0.2.10
