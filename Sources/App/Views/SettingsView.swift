@@ -605,25 +605,7 @@ struct SettingsContentView: View {
                     }
                     .buttonStyle(.plain)
 
-                    // Save & Test button
-                    Button {
-                        Task {
-                            await testCopilotConnection()
-                        }
-                    } label: {
-                        Text("Save & Test")
-                            .font(AppTheme.bodyFont(size: 10))
-                            .foregroundStyle(.white)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 7)
-                            .background(
-                                Capsule()
-                                    .fill(AppTheme.accentGradient(for: colorScheme))
-                            )
-                    }
-                    .buttonStyle(.plain)
-                    .disabled(copilotTokenInput.isEmpty && copilotAuthEnvVarInput.isEmpty)
-                    .opacity((copilotTokenInput.isEmpty && copilotAuthEnvVarInput.isEmpty) ? 0.5 : 1)
+
                 }
 
                 // Status messages
