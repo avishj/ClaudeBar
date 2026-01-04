@@ -20,21 +20,18 @@ struct SettingsContentView: View {
     @State private var copilotTokenInput: String = ""
     @State private var showToken: Bool = false
     @State private var saveError: String?
-    @State private var saveSuccess: Bool = false
+     @State private var saveSuccess: Bool = false
 
-    // Budget input state
-    @State private var budgetInput: String = ""
+     // Budget input state
+     @State private var budgetInput: String = ""
 
-    // Z.ai config path state
-    @State private var zaiConfigPathInput: String = ""
-    @State private var glmAuthEnvVarInput: String = ""
+     @State private var zaiConfigPathInput: String = ""
+     @State private var glmAuthEnvVarInput: String = ""
+     @State private var copilotAuthEnvVarInput: String = ""
+     @State private var isTestingCopilot = false
+     @State private var copilotTestResult: String?
 
-    // Copilot env var state
-    @State private var copilotAuthEnvVarInput: String = ""
-    @State private var isTestingCopilot = false
-    @State private var copilotTestResult: String?
-
-    /// The Copilot provider from the monitor (cast to CopilotProvider for credential access)
+     /// The Copilot provider from the monitor (cast to CopilotProvider for credential access)
     private var copilotProvider: CopilotProvider? {
         monitor.provider(for: "copilot") as? CopilotProvider
     }
