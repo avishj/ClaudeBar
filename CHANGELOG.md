@@ -7,6 +7,40 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.15] - 2026-01-05
+
+### Added
+- **Claude API Billing Support**: Users with API Usage Billing accounts (pay-per-use) can now monitor their Claude usage. The app automatically detects billing plan type and uses the `/cost` command to display total cost and API duration when `/usage` is unavailable.
+- **Z.ai Environment Variable Fallback**: Configure a custom environment variable for GLM authentication in Settings, useful when you have multiple API keys or non-standard setups.
+- **Custom Z.ai Config Path**: Specify a custom path to your Z.ai configuration file if it's not in the default Claude Code settings location.
+- **Copilot Environment Variable Support**: Configure a custom environment variable for GitHub Copilot authentication, with validation to ensure the variable exists.
+
+### Improved
+- **Easier Log Access**: "Open Logs" now opens the log file directly in TextEdit instead of the folder, making it quicker to view logs.
+- **Z.ai Settings UI**: Added chevron indicator to show expand/collapse state for Z.ai configuration section.
+- **Better Z.ai Error Messages**: Error messages now include the config path being used, making troubleshooting easier.
+- **CLI Diagnostics**: When Claude CLI is not found, the app now logs PATH and CLAUDE_CONFIG_DIR environment variables to help diagnose installation issues.
+
+### Fixed
+- **UI Layout Issues** ([#40](https://github.com/tddworks/ClaudeBar/issues/40)): Fixed layout constraints that caused views to break on certain screen sizes.
+- **Claude Detection for API Accounts** ([#37](https://github.com/tddworks/ClaudeBar/issues/37)): Fixed issue where users with API Usage Billing accounts couldn't see Claude quota information.
+
+### Technical
+- Extended `ProbeError` with `subscriptionRequired` case for API billing detection
+- Implemented `/cost` command parsing with cost value and API duration extraction
+- Added ISP-based repository hierarchy for provider-specific settings (`ZaiSettingsRepository`, `CopilotSettingsRepository`)
+- Namespaced UserDefaults keys with `providerConfig.` prefix for cleaner storage
+- Added `NotificationAlerter` unit tests
+- Comprehensive test coverage for API billing detection and cost parsing
+
+## [0.2.14] - 2026-01-03
+
+### Fixed
+- **Layout Constraint Crash**: Fixed potential crash from layout constraints in background views.
+
+### Technical
+- Added skill guides for bug fixing and improvements following Chicago School TDD
+
 ## [0.2.13] - 2026-01-02
 
 ### Improved
@@ -199,7 +233,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Menu bar interface with quota display
 - Automatic refresh every 5 minutes
 
-[Unreleased]: https://github.com/tddworks/ClaudeBar/compare/v0.2.13...HEAD
+[Unreleased]: https://github.com/tddworks/ClaudeBar/compare/v0.2.15...HEAD
+[0.2.15]: https://github.com/tddworks/ClaudeBar/compare/v0.2.14...v0.2.15
+[0.2.14]: https://github.com/tddworks/ClaudeBar/compare/v0.2.13...v0.2.14
 [0.2.13]: https://github.com/tddworks/ClaudeBar/compare/v0.2.12...v0.2.13
 [0.2.12]: https://github.com/tddworks/ClaudeBar/compare/v0.2.11...v0.2.12
 [0.2.11]: https://github.com/tddworks/ClaudeBar/compare/v0.2.10...v0.2.11
