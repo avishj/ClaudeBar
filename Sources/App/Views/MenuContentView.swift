@@ -93,7 +93,7 @@ struct MenuContentView: View {
                 }
             }
         }
-        .frame(width: 380)
+        .frame(width: 400)
         .fixedSize(horizontal: false, vertical: true)
         .clipShape(RoundedRectangle(cornerRadius: 16))
         .task {
