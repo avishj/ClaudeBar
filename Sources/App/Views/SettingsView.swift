@@ -26,6 +26,7 @@ struct SettingsContentView: View {
     @State private var providersExpanded: Bool = false
     @State private var zaiConfigExpanded: Bool = false
     @State private var updatesExpanded: Bool = false
+    @State private var backgroundSyncExpanded: Bool = false
 
     // Budget input state
     @State private var budgetInput: String = ""
@@ -99,6 +100,7 @@ struct SettingsContentView: View {
                         zaiConfigCard
                             .transition(.opacity.combined(with: .move(edge: .top)))
                     }
+                    backgroundSyncCard
                     #if ENABLE_SPARKLE
                     updatesCard
                     #endif
@@ -1149,6 +1151,99 @@ struct SettingsContentView: View {
                         )
                 )
         )
+    }
+
+    // MARK: - Background Sync Card
+
+    private var backgroundSyncCard: some View {
+        DisclosureGroup(isExpanded: $backgroundSyncExpanded) {
+            Divider()
+                .background(theme.glassBorder)
+                .padding(.vertical, 12)
+
+            VStack(alignment: .leading, spacing: 14) {
+                // Interval picker
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("SYNC INTERVAL")
+                        .font(.system(size: 9, weight: .semibold, design: theme.fontDesign))
+                        .foregroundStyle(theme.textSecondary)
+                        .tracking(0.5)
+
+                    Picker("", selection: $settings.backgroundSyncInterval) {
+                        Text("30 seconds").tag(30.0)
+                        Text("1 minute").tag(60.0)
+                        Text("2 minutes").tag(120.0)
+                        Text("5 minutes").tag(300.0)
+                    }
+                    .pickerStyle(.segmented)
+                    .disabled(!settings.backgroundSyncEnabled)
+                }
+
+                // Help text
+                Text("Sync usage data in the background so it's always fresh when you check.")
+                    .font(.system(size: 9, weight: .semibold, design: theme.fontDesign))
+                    .foregroundStyle(theme.textTertiary)
+            }
+            .opacity(settings.backgroundSyncEnabled ? 1 : 0.6)
+        } label: {
+            backgroundSyncHeader
+                .contentShape(.rect)
+                .onTapGesture {
+                    withAnimation(.easeInOut(duration: 0.2)) {
+                        backgroundSyncExpanded.toggle()
+                    }
+                }
+        }
+        .padding(14)
+        .background(
+            RoundedRectangle(cornerRadius: theme.cardCornerRadius)
+                .fill(theme.cardGradient)
+                .overlay(
+                    RoundedRectangle(cornerRadius: theme.cardCornerRadius)
+                        .stroke(theme.glassBorder, lineWidth: 1)
+                )
+        )
+    }
+
+    private var backgroundSyncHeader: some View {
+        HStack(spacing: 10) {
+            ZStack {
+                Circle()
+                    .fill(
+                        LinearGradient(
+                            colors: [
+                                Color(red: 0.3, green: 0.6, blue: 0.9),
+                                Color(red: 0.2, green: 0.45, blue: 0.8)
+                            ],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .frame(width: 32, height: 32)
+
+                Image(systemName: "arrow.triangle.2.circlepath")
+                    .font(.system(size: 12, weight: .bold))
+                    .foregroundStyle(.white)
+            }
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text("Background Sync")
+                    .font(.system(size: 14, weight: .bold, design: theme.fontDesign))
+                    .foregroundStyle(theme.textPrimary)
+
+                Text("Keep data fresh automatically")
+                    .font(.system(size: 10, weight: .medium, design: theme.fontDesign))
+                    .foregroundStyle(theme.textTertiary)
+            }
+
+            Spacer()
+
+            Toggle("", isOn: $settings.backgroundSyncEnabled)
+                .toggleStyle(.switch)
+                .tint(theme.accentPrimary)
+                .scaleEffect(0.8)
+                .labelsHidden()
+        }
     }
 
     // MARK: - Footer

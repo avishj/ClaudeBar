@@ -102,6 +102,11 @@ struct MenuContentView: View {
                 hasRequestedNotificationPermission = true
                 let granted = await quotaAlerter.requestPermission()
                 AppLog.notifications.info("Alert permission request result: \(granted ? "granted" : "denied")")
+
+                // Start background sync on first app launch (only once)
+                if settings.backgroundSyncEnabled && !monitor.isMonitoring {
+                    startBackgroundSync()
+                }
             }
 
             // Show header and tabs immediately
@@ -122,6 +127,43 @@ struct MenuContentView: View {
                 await refresh(providerId: newProviderId)
             }
         }
+        .onChange(of: settings.backgroundSyncEnabled) { _, enabled in
+            // React to background sync toggle
+            if enabled {
+                startBackgroundSync()
+            } else {
+                stopBackgroundSync()
+            }
+        }
+        .onChange(of: settings.backgroundSyncInterval) { _, _ in
+            // Restart sync with new interval
+            if settings.backgroundSyncEnabled {
+                restartBackgroundSync()
+            }
+        }
+    }
+
+    // MARK: - Background Sync Control
+
+    private func startBackgroundSync() {
+        let interval = Duration.seconds(settings.backgroundSyncInterval)
+        AppLog.monitor.info("Starting background sync (interval: \(settings.backgroundSyncInterval)s)")
+        Task {
+            let stream = monitor.startMonitoring(interval: interval)
+            for await _ in stream {
+                // Events handled internally by QuotaMonitor
+            }
+        }
+    }
+
+    private func stopBackgroundSync() {
+        AppLog.monitor.info("Stopping background sync")
+        monitor.stopMonitoring()
+    }
+
+    private func restartBackgroundSync() {
+        stopBackgroundSync()
+        startBackgroundSync()
     }
 
     // MARK: - Background Orbs

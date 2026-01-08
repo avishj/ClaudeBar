@@ -56,6 +56,22 @@ public final class AppSettings {
         }
     }
 
+    // MARK: - Background Sync Settings
+
+    /// Whether background sync is enabled (default: true)
+    public var backgroundSyncEnabled: Bool {
+        didSet {
+            UserDefaults.standard.set(backgroundSyncEnabled, forKey: Keys.backgroundSyncEnabled)
+        }
+    }
+
+    /// Background sync interval in seconds (default: 60)
+    public var backgroundSyncInterval: TimeInterval {
+        didSet {
+            UserDefaults.standard.set(backgroundSyncInterval, forKey: Keys.backgroundSyncInterval)
+        }
+    }
+
 
 
     // MARK: - Initialization
@@ -66,6 +82,10 @@ public final class AppSettings {
         self.claudeApiBudgetEnabled = UserDefaults.standard.bool(forKey: Keys.claudeApiBudgetEnabled)
         self.claudeApiBudget = Decimal(UserDefaults.standard.double(forKey: Keys.claudeApiBudget))
         self.receiveBetaUpdates = UserDefaults.standard.bool(forKey: Keys.receiveBetaUpdates)
+
+        // Background sync defaults to enabled with 60 second interval
+        self.backgroundSyncEnabled = UserDefaults.standard.object(forKey: Keys.backgroundSyncEnabled) as? Bool ?? true
+        self.backgroundSyncInterval = UserDefaults.standard.object(forKey: Keys.backgroundSyncInterval) as? TimeInterval ?? 60
 
         // Auto-enable Christmas theme during Dec 24-26 if user hasn't explicitly chosen
         applySeasonalTheme()
@@ -110,6 +130,8 @@ private extension AppSettings {
         static let claudeApiBudgetEnabled = "claudeApiBudgetEnabled"
         static let claudeApiBudget = "claudeApiBudget"
         static let receiveBetaUpdates = "receiveBetaUpdates"
+        static let backgroundSyncEnabled = "backgroundSyncEnabled"
+        static let backgroundSyncInterval = "backgroundSyncInterval"
     }
 }
 
