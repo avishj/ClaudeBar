@@ -7,6 +7,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.6] - 2026-01-11
+
+### Added
+- **SwiftTerm Integration**: Added SwiftTerm terminal emulator library to properly render Claude CLI output. This fixes parsing issues with Claude Code v2.1.4+ which uses advanced terminal UI with cursor movements that previously corrupted captured output.
+
+### Improved
+- **Simplified Parsing**: Removed complex fuzzy matching and cursor movement heuristics. Terminal output is now properly rendered before parsing, producing clean text like a real terminal display.
+- **Better Quota Accuracy**: Terminal rendering ensures "Current session" and other quota labels are parsed correctly even when the CLI uses cursor positioning to redraw the screen.
+
+### Fixed
+- **Sonnet Quota Display**: Fixed "Current week (Sonnet only)" being incorrectly labeled as "Opus" in the quota display. Sonnet and Opus quotas are now tracked and displayed separately.
+- **Null Character Handling**: Fixed terminal buffer extraction to properly handle null characters from empty cells, which caused extracted text to include invisible padding.
+
+### Technical
+- Added SwiftTerm dependency (1.2.0+) for VT100/Xterm terminal emulation
+- Created `TerminalRenderer` utility in `Sources/Infrastructure/Adapters/` that handles cursor movements, screen clearing, and ANSI escape sequences
+- Replaced `stripANSICodes()` in `ClaudeUsageProbe` with `renderTerminalOutput()` using SwiftTerm
+- Updated `Project.swift` to include SwiftTerm in Infrastructure target for Tuist builds
+- Removed fuzzy regex matching (`matchesFuzzy`) - no longer needed with proper terminal rendering
+
 ## [0.3.4] - 2026-01-08
 
 ### Added
