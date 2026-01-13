@@ -38,27 +38,24 @@ enum Shell: Sendable, Equatable {
 
     func whichArguments(for tool: String) -> [String] {
         guard let safeTool = Self.sanitizedToolName(tool) else {
-            return ["-i", "-l", "-c", "which ''"]
+            return ["-l", "-c", "which ''"]
         }
 
         switch self {
         case .posix, .fish:
-            // Use -i (interactive) to source .zshrc/.bashrc where mise/asdf/nvm are activated
-            // Use -l (login) to also source .zprofile/.bash_profile
-            return ["-i", "-l", "-c", "which \(safeTool)"]
+            return ["-l", "-c", "which \(safeTool)"]
         case .nushell:
             // ^which calls the external binary, avoiding Nushell's table-outputting built-in
-            return ["-i", "-l", "-c", "^which \(safeTool)"]
+            return ["-l", "-c", "^which \(safeTool)"]
         }
     }
 
     func pathArguments() -> [String] {
         switch self {
         case .posix, .fish:
-            // Use -i (interactive) to source .zshrc/.bashrc where mise/asdf/nvm are activated
-            return ["-i", "-l", "-c", "echo $PATH"]
+            return ["-l", "-c", "echo $PATH"]
         case .nushell:
-            return ["-i", "-l", "-c", "$env.PATH | str join ':'"]
+            return ["-l", "-c", "$env.PATH | str join ':'"]
         }
     }
 
