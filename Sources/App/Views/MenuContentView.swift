@@ -213,6 +213,7 @@ struct MenuContentView: View {
     private var headerView: some View {
         HStack(spacing: 12) {
             // Custom Provider Icon - changes based on selected provider
+            // Avoid animation on provider icon to prevent constraint update loops in MenuBarExtra
             ZStack {
                 ProviderIconView(providerId: selectedProviderId, size: 38)
 
@@ -224,7 +225,6 @@ struct MenuContentView: View {
                         .offset(x: 14, y: -14)
                 }
             }
-            .animation(.spring(response: 0.4, dampingFraction: 0.7), value: selectedProviderId)
 
             VStack(alignment: .leading, spacing: 2) {
                 HStack(spacing: 4) {
@@ -330,9 +330,8 @@ struct MenuContentView: View {
                         isSelected: provider.id == selectedProviderId,
                         hasData: provider.snapshot != nil
                     ) {
-                        withAnimation(.spring(response: 0.35, dampingFraction: 0.7)) {
-                            selectedProviderId = provider.id
-                        }
+                        // Avoid withAnimation to prevent constraint update loops in MenuBarExtra
+                        selectedProviderId = provider.id
                     }
                 }
             }
