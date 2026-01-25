@@ -358,6 +358,48 @@ struct CopilotUsageProbeTests {
         #expect(quota.resetText == "750/1500 requests")
     }
 
+    @Test
+    func `probe uses default 50 when monthly limit is invalid`() async throws {
+        // Test with zero limit (invalid)
+        let settings = makeSettingsRepository(username: "testuser", hasToken: true, monthlyLimit: 0)
+        let mockNetwork = MockNetworkClient()
+        let responseJSON = """
+        {
+          "timePeriod": { "year": 2025, "month": 12 },
+          "user": "testuser",
+          "usageItems": [
+            {
+              "product": "Copilot",
+              "sku": "Copilot Premium Request",
+              "model": "Claude Sonnet 4",
+              "grossQuantity": 25.0
+            }
+          ]
+        }
+        """.data(using: .utf8)!
+
+        let response = HTTPURLResponse(
+            url: URL(string: "https://api.github.com")!,
+            statusCode: 200,
+            httpVersion: nil,
+            headerFields: nil
+        )!
+
+        given(mockNetwork).request(.any).willReturn((responseJSON, response))
+
+        let probe = CopilotUsageProbe(
+            networkClient: mockNetwork,
+            settingsRepository: settings
+        )
+
+        let snapshot = try await probe.probe()
+
+        let quota = snapshot.quotas.first!
+        // Should fall back to default 50 when limit is invalid (0 or negative)
+        #expect(quota.percentRemaining == 50.0)
+        #expect(quota.resetText == "25/50 requests")
+    }
+
     // MARK: - Manual Override Tests
 
     @Test
