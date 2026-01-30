@@ -10,9 +10,6 @@ let packageSettings = PackageSettings(
     // Default is .staticFramework
     // productTypes: ["Alamofire": .framework,]
     productTypes: [
-        // Build IssueReporting as static library to fix 'package' access visibility issue with Swift 6.2
-        "IssueReporting": .staticLibrary,
-        "IssueReportingPackageSupport": .staticLibrary,
         // Build AWS SDK modules as static libraries to properly link internal dependencies
         "AWSSDKIdentity": .staticLibrary,
         "AWSCloudWatch": .staticLibrary,
