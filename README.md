@@ -11,9 +11,9 @@
 A macOS menu bar application that monitors AI coding assistant usage quotas. Keep track of your Claude, Codex, Gemini, GitHub Copilot, Antigravity, and Z.ai usage at a glance.
 
 <p align="center">
-  <img src="docs/Screenshot-dark.png" alt="ClaudeBar Dark Mode" width="380"/>
+  <img src="docs/screenshots/Screenshot-dark.png" alt="ClaudeBar Dark Mode" width="380"/>
   &nbsp;&nbsp;&nbsp;&nbsp;
-  <img src="docs/Screenshot-light.png" alt="ClaudeBar Light Mode" width="380"/>
+  <img src="docs/screenshots/Screenshot-light.png" alt="ClaudeBar Light Mode" width="380"/>
 </p>
 <p align="center">
   <em>Dark Mode &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Light Mode</em>
@@ -22,7 +22,7 @@ A macOS menu bar application that monitors AI coding assistant usage quotas. Kee
 ### CLI Theme
 
 <p align="center">
-  <img src="docs/Screenshot-cli-dark.png" alt="ClaudeBar CLI Theme" width="380"/>
+  <img src="docs/screenshots/Screenshot-cli-dark.png" alt="ClaudeBar CLI Theme" width="380"/>
 </p>
 <p align="center">
   <em>Minimalistic monochrome terminal aesthetic with classic green accents</em>
