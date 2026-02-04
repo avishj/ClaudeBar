@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.4.2] - 2026-02-04
+
+### Added
+- **Codex API Mode**: New alternative to RPC mode that fetches quota data directly via the ChatGPT backend API. Faster than RPC mode (no subprocess spawning), with automatic OAuth token refresh. Switch between modes in Settings → Codex Configuration.
+- **Codex Configuration Card**: New settings panel to choose between RPC mode (default, uses `codex app-server` JSON-RPC) and API mode (direct HTTP API calls using OAuth credentials from `~/.codex/auth.json`).
+
+### Improved
+- **Codebase Organization**: Reorganized Infrastructure and Domain layers from mechanism-based grouping (`CLI/`, `Adapters/`, `AWS/`) to provider-based grouping (`Claude/`, `Codex/`, `Gemini/`, etc.), making it easier to find all files related to a specific provider.
+
+### Technical
+- Added `CodexAPIUsageProbe` calling `https://chatgpt.com/backend-api/wham/usage` with OAuth token refresh via `https://auth.openai.com/oauth/token`
+- Added `CodexCredentialLoader` for loading OAuth credentials from `~/.codex/auth.json`
+- Added `CodexProbeMode` enum (`.rpc`, `.api`) and `CodexSettingsRepository` protocol for probe mode persistence
+- Extended `CodexProvider` with dual probe support (RPC + API) and mode switching
+- Reorganized `Sources/Infrastructure/` into provider-level folders (`Claude/`, `Codex/`, `Gemini/`, `Copilot/`, `Antigravity/`, `Zai/`, `Bedrock/`, `Shared/`)
+- Reorganized `Sources/Domain/Provider/` and `Tests/InfrastructureTests/` to mirror the same provider-first structure
+
 ## [0.4.1] - 2026-02-04
 
 ### Added
@@ -367,7 +384,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Menu bar interface with quota display
 - Automatic refresh every 5 minutes
 
-[Unreleased]: https://github.com/tddworks/ClaudeBar/compare/v0.4.1...HEAD
+[Unreleased]: https://github.com/tddworks/ClaudeBar/compare/v0.4.2...HEAD
+[0.4.2]: https://github.com/tddworks/ClaudeBar/compare/v0.4.1...v0.4.2
 [0.4.1]: https://github.com/tddworks/ClaudeBar/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/tddworks/ClaudeBar/compare/v0.3.15...v0.4.0
 [0.3.15]: https://github.com/tddworks/ClaudeBar/compare/v0.3.12...v0.3.15
