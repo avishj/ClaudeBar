@@ -546,6 +546,31 @@ struct ClaudeUsageProbeParsingTests {
     Esc to cancel
     """
 
+    // Claude API account (subscription with quotas, different from API Usage Billing)
+    static let claudeApiWithQuotasOutput = """
+    ▐▛███▜▌   Claude Code v2.1.34
+    ▝▜█████▛▘  Sonnet 4.5 · Claude API
+    ▘▘ ▝▝    ~/Library/Application Support/ClaudeBar/Probe
+
+    ❯ /usage
+    Settings:  Status   Config   Usage  (←/→ or tab to cycle)
+
+
+    Current session
+    ██▌                                                5% used
+    Resets 9pm (Asia/Shanghai)
+
+    Current week (all models)
+    █████████▌                                         19% used
+    Resets Feb 12 at 4pm (Asia/Shanghai)
+
+    Current week (Sonnet only)
+    ███▌                                               7% used
+    Resets Feb 9 at 8pm (Asia/Shanghai)
+
+    Esc to cancel
+    """
+
     @Test
     func `detects API Usage Billing account from header`() throws {
         // Given
@@ -557,6 +582,33 @@ struct ClaudeUsageProbeParsingTests {
 
         // Then
         #expect(accountType == .claudeApi)
+    }
+
+    @Test
+    func `treats Claude API with quotas as subscription account`() throws {
+        // Given
+        let probe = ClaudeUsageProbe()
+        let output = "Sonnet 4.5 · Claude API"
+
+        // When
+        let accountType = probe.detectAccountType(output)
+
+        // Then - Should NOT be treated as .claudeApi (which is for pay-as-you-go)
+        // Should default to .claudeMax since it has quota data
+        #expect(accountType == .claudeMax)
+    }
+
+    @Test
+    func `parses Claude API account with quotas successfully`() throws {
+        // When
+        let snapshot = try ClaudeUsageProbe.parse(Self.claudeApiWithQuotasOutput)
+
+        // Then - Should parse quotas, not throw subscriptionRequired
+        #expect(snapshot.accountTier == .claudeMax) // Defaults to Max for API accounts with quotas
+        #expect(snapshot.sessionQuota != nil)
+        #expect(snapshot.sessionQuota?.percentRemaining == 95) // 5% used = 95% remaining
+        #expect(snapshot.weeklyQuota?.percentRemaining == 81) // 19% used = 81% remaining
+        #expect(snapshot.quota(for: .modelSpecific("sonnet"))?.percentRemaining == 93) // 7% used = 93% remaining
     }
 
     @Test

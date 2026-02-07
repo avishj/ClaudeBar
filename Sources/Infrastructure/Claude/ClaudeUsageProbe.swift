@@ -372,17 +372,15 @@ public final class ClaudeUsageProbe: UsageProbe, @unchecked Sendable {
         }
 
         // Check for API Usage Billing in header (e.g., "Sonnet 4.5 · API Usage Billing")
+        // This is the ONLY case that should return .claudeApi (pay-as-you-go without quotas)
         if lower.contains("api usage billing") {
             AppLog.probes.info("Detected API Usage Billing account from header")
             return .claudeApi
         }
 
-        // Check for Claude API (unlikely in /usage, but check anyway)
-        if lower.contains("· claude api") || lower.contains("·claude api") ||
-           lower.contains("api account") {
-            AppLog.probes.info("Detected Claude API account from header")
-            return .claudeApi
-        }
+        // Note: "Claude API" accounts (e.g., "Sonnet 4.5 · Claude API") are subscription
+        // accounts with quotas, so we should NOT treat them as .claudeApi here.
+        // They will fall through to the quota-based detection below.
 
         // Fallback: Check for presence of quota data (subscription accounts have quotas)
         let hasSessionQuota = lower.contains("current session") && (lower.contains("% left") || lower.contains("% used"))
