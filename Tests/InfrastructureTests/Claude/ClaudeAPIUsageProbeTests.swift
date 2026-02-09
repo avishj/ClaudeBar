@@ -207,7 +207,7 @@ struct ClaudeAPIUsageProbeTests {
     }
 
     @Test
-    func `probe parses extra usage correctly`() async throws {
+    func `probe parses extra usage correctly converting cents to dollars`() async throws {
         let tempDir = try makeTemporaryDirectory()
         defer { try? FileManager.default.removeItem(at: tempDir) }
 
@@ -215,13 +215,14 @@ struct ClaudeAPIUsageProbeTests {
         try createCredentialsFile(at: tempDir, expiresAt: futureExpiry, subscriptionType: "claude_pro")
 
         let mockNetwork = MockNetworkClient()
+        // API returns used_credits and monthly_limit in cents
         let responseJSON = """
         {
           "five_hour": { "utilization": 10.0, "resets_at": "2025-01-15T10:00:00Z" },
           "extra_usage": {
             "is_enabled": true,
-            "used_credits": 5.41,
-            "monthly_limit": 20.00
+            "used_credits": 541,
+            "monthly_limit": 2000
           }
         }
         """.data(using: .utf8)!
@@ -242,8 +243,55 @@ struct ClaudeAPIUsageProbeTests {
 
         #expect(snapshot.accountTier == .claudePro)
         #expect(snapshot.costUsage != nil)
-        #expect(snapshot.costUsage?.totalCost == 5.41)
-        #expect(snapshot.costUsage?.budget == 20.00)
+        // 541 cents -> $5.41
+        #expect(snapshot.costUsage?.totalCost == Decimal(string: "5.41"))
+        // 2000 cents -> $20.00
+        #expect(snapshot.costUsage?.budget == Decimal(string: "20"))
+    }
+
+    @Test
+    func `probe converts API cost from cents to dollars for large amounts`() async throws {
+        let tempDir = try makeTemporaryDirectory()
+        defer { try? FileManager.default.removeItem(at: tempDir) }
+
+        let futureExpiry = Date().addingTimeInterval(3600).timeIntervalSince1970 * 1000
+        try createCredentialsFile(at: tempDir, expiresAt: futureExpiry, subscriptionType: "claude_pro")
+
+        let mockNetwork = MockNetworkClient()
+        // Simulates the real scenario: $26.72 spent of $50 budget
+        // API returns 2672 cents and 5000 cents
+        let responseJSON = """
+        {
+          "five_hour": { "utilization": 10.0, "resets_at": "2025-01-15T10:00:00Z" },
+          "extra_usage": {
+            "is_enabled": true,
+            "used_credits": 2672,
+            "monthly_limit": 5000
+          }
+        }
+        """.data(using: .utf8)!
+
+        let response = HTTPURLResponse(
+            url: URL(string: "https://api.anthropic.com")!,
+            statusCode: 200,
+            httpVersion: nil,
+            headerFields: nil
+        )!
+
+        given(mockNetwork).request(.any).willReturn((responseJSON, response))
+
+        let loader = ClaudeCredentialLoader(homeDirectory: tempDir.path, useKeychain: false)
+        let probe = ClaudeAPIUsageProbe(credentialLoader: loader, networkClient: mockNetwork)
+
+        let snapshot = try await probe.probe()
+
+        #expect(snapshot.costUsage != nil)
+        // 2672 cents -> $26.72 (NOT $2672.00)
+        #expect(snapshot.costUsage?.totalCost == Decimal(string: "26.72"))
+        // 5000 cents -> $50.00 (NOT $5000.00)
+        #expect(snapshot.costUsage?.budget == Decimal(string: "50"))
+        // Verify formatted output
+        #expect(snapshot.costUsage?.formattedCost == "$26.72")
     }
 
     @Test

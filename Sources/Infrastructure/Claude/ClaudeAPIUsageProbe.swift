@@ -291,12 +291,13 @@ public struct ClaudeAPIUsageProbe: UsageProbe, @unchecked Sendable {
         }
 
         // Parse extra usage
+        // API returns used_credits and monthly_limit in cents, convert to dollars
         var costUsage: CostUsage?
         if let extra = response.extraUsage, extra.isEnabled == true {
             if let used = extra.usedCredits {
                 costUsage = CostUsage(
-                    totalCost: Decimal(used),
-                    budget: extra.monthlyLimit.map { Decimal($0) },
+                    totalCost: Decimal(used) / 100,
+                    budget: extra.monthlyLimit.map { Decimal($0) / 100 },
                     apiDuration: 0,
                     providerId: "claude",
                     capturedAt: Date(),
