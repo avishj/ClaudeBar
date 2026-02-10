@@ -16,6 +16,14 @@ public struct AmpCodeUsageProbe: UsageProbe {
         self.timeout = timeout
     }
 
+    // MARK: - Constants
+
+    private static let emailRegex = try! NSRegularExpression(pattern: #"Signed in as\s+(\S+)\s+\("#)
+    private static let creditLineRegex = try! NSRegularExpression(
+        pattern: #"^(.+?):\s*\$([0-9]+(?:\.[0-9]+)?)\s*/\s*\$([0-9]+(?:\.[0-9]+)?)\s+remaining"#,
+        options: .caseInsensitive
+    )
+
     // MARK: - UsageProbe
 
     public func isAvailable() async -> Bool {
@@ -111,13 +119,10 @@ public struct AmpCodeUsageProbe: UsageProbe {
 
     // MARK: - Private Parsing Helpers
 
-    /// Extracts email from "Signed in as <email> (<username>)" line
     private static func extractEmail(from lines: [String]) -> String? {
         for line in lines {
             // Pattern: "Signed in as <email> (<username>)"
-            let pattern = #"Signed in as\s+(\S+)\s+\("#
-            guard let regex = try? NSRegularExpression(pattern: pattern),
-                  let match = regex.firstMatch(in: line, range: NSRange(line.startIndex..<line.endIndex, in: line)),
+            guard let match = emailRegex.firstMatch(in: line, range: NSRange(line.startIndex..<line.endIndex, in: line)),
                   let emailRange = Range(match.range(at: 1), in: line) else {
                 continue
             }
@@ -132,9 +137,7 @@ public struct AmpCodeUsageProbe: UsageProbe {
     /// Format: "<Label>: $<remaining>/$<total> remaining ..."
     private static func parseCreditLine(_ line: String) -> UsageQuota? {
         // Match pattern: "<Label>: $<remaining>/$<total> remaining"
-        let pattern = #"^(.+?):\s*\$([0-9]+(?:\.[0-9]+)?)\s*/\s*\$([0-9]+(?:\.[0-9]+)?)\s+remaining"#
-        guard let regex = try? NSRegularExpression(pattern: pattern, options: .caseInsensitive),
-              let match = regex.firstMatch(in: line, range: NSRange(line.startIndex..<line.endIndex, in: line)),
+        guard let match = creditLineRegex.firstMatch(in: line, range: NSRange(line.startIndex..<line.endIndex, in: line)),
               let labelRange = Range(match.range(at: 1), in: line),
               let remainingRange = Range(match.range(at: 2), in: line),
               let totalRange = Range(match.range(at: 3), in: line) else {
