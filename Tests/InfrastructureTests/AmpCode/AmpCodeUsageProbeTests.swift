@@ -120,7 +120,7 @@ struct AmpCodeUsageProbeTests {
         let probe = AmpCodeUsageProbe(cliExecutor: mockExecutor)
 
         // When & Then
-        await #expect(throws: ProbeError.executionFailed("amp usage failed: Request timed out")) {
+        await #expect(throws: ProbeError.executionFailed("amp usage failed: timeout")) {
             try await probe.probe()
         }
     }
