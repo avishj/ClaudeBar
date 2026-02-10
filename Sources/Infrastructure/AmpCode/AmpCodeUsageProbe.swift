@@ -23,6 +23,9 @@ public struct AmpCodeUsageProbe: UsageProbe {
         pattern: #"^(.+?):\s*\$([0-9]+(?:\.[0-9]+)?)\s*/\s*\$([0-9]+(?:\.[0-9]+)?)\s+remaining"#,
         options: .caseInsensitive
     )
+    private static let tierMappings: [String: String] = [
+        "amp free": "Free"
+    ]
 
     // MARK: - UsageProbe
 
@@ -112,8 +115,8 @@ public struct AmpCodeUsageProbe: UsageProbe {
 
         // Determine tier from quotas
         let tier = quotas.compactMap { quota -> String? in
-            if case .modelSpecific(let label) = quota.quotaType, label == "Amp Free" {
-                return "Free"
+            if case .modelSpecific(let label) = quota.quotaType {
+                return tierMappings[label.lowercased()]
             }
             return nil
         }.first
