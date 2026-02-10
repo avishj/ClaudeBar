@@ -227,12 +227,13 @@ extension AmpCodeProvider: ProviderVisualIdentity {
     }
 
     public func themeGradient(for scheme: ColorScheme) -> LinearGradient {
-        LinearGradient(
-            colors: [
-                scheme == .dark
-                    ? Color(red: 0.95, green: 0.30, blue: 0.25)
-                    : Color(red: 0.90, green: 0.25, blue: 0.20)
-            ],
+        let primaryColor = themeColor(for: scheme)
+        let secondaryColor = scheme == .dark
+            ? Color(red: 0.85, green: 0.20, blue: 0.15)
+            : Color(red: 0.80, green: 0.15, blue: 0.10)
+
+        return LinearGradient(
+            colors: [primaryColor, secondaryColor],
             startPoint: .topLeading,
             endPoint: .bottomTrailing
         )
