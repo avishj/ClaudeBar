@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+---
+
+## [0.4.40] - 2026-03-04
+
 ### Fixed
 - **Cursor Enterprise Plan Support**: Fixed quota monitoring for enterprise accounts where `limitType` is `"team"`. Previously the parser always threw `"No usage data found"` because `individualUsage.plan.limit` is `0` on enterprise plans. The parser now falls back to `breakdown.total` for the individual credit limit and reads `teamUsage.onDemand` as an additional team quota source (reported in [#136](https://github.com/tddworks/ClaudeBar/issues/136)).
 
@@ -536,7 +540,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Menu bar interface with quota display
 - Automatic refresh every 5 minutes
 
-[Unreleased]: https://github.com/tddworks/ClaudeBar/compare/v0.4.38...HEAD
+[Unreleased]: https://github.com/tddworks/ClaudeBar/compare/v0.4.40...HEAD
+[0.4.40]: https://github.com/tddworks/ClaudeBar/compare/v0.4.38...v0.4.40
 [0.4.38]: https://github.com/tddworks/ClaudeBar/compare/v0.4.37...v0.4.38
 [0.4.28]: https://github.com/tddworks/ClaudeBar/compare/v0.4.27...v0.4.28
 [0.4.26]: https://github.com/tddworks/ClaudeBar/compare/v0.4.2...v0.4.26
