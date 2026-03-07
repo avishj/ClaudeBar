@@ -1,17 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
-  <defs>
-    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#E8456B"/>
-      <stop offset="100%" style="stop-color:#F5873C"/>
-    </linearGradient>
-  </defs>
-  <rect width="64" height="64" rx="14" fill="url(#bg)"/>
-  <g transform="translate(12, 20)" fill="white">
-    <rect x="0" y="8" width="4" height="8" rx="2"/>
-    <rect x="8" y="4" width="4" height="16" rx="2"/>
-    <rect x="16" y="0" width="4" height="24" rx="2"/>
-    <rect x="24" y="4" width="4" height="16" rx="2"/>
-    <rect x="32" y="2" width="4" height="20" rx="2"/>
-    <rect x="36" y="8" width="4" height="8" rx="2"/>
-  </g>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64"><defs><linearGradient id="bg" x1="0%" x2="100%" y1="0%" y2="100%"><stop offset="0%" style="stop-color:#e8456b"/><stop offset="100%" style="stop-color:#f5873c"/></linearGradient></defs><rect width="64" height="64" fill="url(#bg)" rx="14"/><g fill="#fff" transform="translate(12, 20)"><rect width="4" height="8" x="0" y="8" rx="2"/><rect width="4" height="16" x="8" y="4" rx="2"/><rect width="4" height="24" x="16" y="0" rx="2"/><rect width="4" height="16" x="24" y="4" rx="2"/><rect width="4" height="20" x="32" y="2" rx="2"/><rect width="4" height="8" x="36" y="8" rx="2"/></g></svg>
