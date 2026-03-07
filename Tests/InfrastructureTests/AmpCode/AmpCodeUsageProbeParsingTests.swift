@@ -119,6 +119,45 @@ struct AmpCodeUsageProbeParsingTests {
     }
 
     @Test
+    func `free tier quota has dollar breakdown in resetText`() throws {
+        // Given
+        let text = Self.sampleOutput
+
+        // When
+        let snapshot = try AmpCodeUsageProbe.parse(text)
+
+        // Then - shows $remaining/$total like Copilot shows x/y requests
+        let freeQuota = snapshot.quotas.first { $0.quotaType == .modelSpecific("Amp Free") }
+        #expect(freeQuota?.resetText == "$17.59/$20.00")
+    }
+
+    @Test
+    func `zero remaining quota has dollar breakdown in resetText`() throws {
+        // Given
+        let text = Self.sampleOutputZeroRemaining
+
+        // When
+        let snapshot = try AmpCodeUsageProbe.parse(text)
+
+        // Then
+        let freeQuota = snapshot.quotas.first { $0.quotaType == .modelSpecific("Amp Free") }
+        #expect(freeQuota?.resetText == "$0.00/$20.00")
+    }
+
+    @Test
+    func `individual credits has no resetText`() throws {
+        // Given - balance-only line has no total, so no breakdown
+        let text = Self.sampleOutputWithIndividualCredits
+
+        // When
+        let snapshot = try AmpCodeUsageProbe.parse(text)
+
+        // Then
+        let creditsQuota = snapshot.quotas.first { $0.quotaType == .modelSpecific("Individual credits") }
+        #expect(creditsQuota?.resetText == nil)
+    }
+
+    @Test
     func `free tier quota has nil dollarRemaining`() throws {
         // Given
         let text = Self.sampleOutput
